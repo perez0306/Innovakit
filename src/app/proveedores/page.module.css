@@ -6,9 +6,6 @@
   --button-primary-hover: #383838;
   --button-secondary-hover: #f2f2f2;
 
-  display: grid;
-  align-items: center;
-  justify-items: center;
   min-height: 100svh;
   font-family: var(--font-geist-sans);
 }

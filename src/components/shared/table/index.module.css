@@ -1,0 +1,17 @@
+.actions {
+  display: flex;
+  justify-content: center;
+}
+
+.edit {
+  color: rgb(20, 20, 136);
+}
+
+.delete {
+  color: rgb(136, 16, 16);
+}
+
+.empty {
+  text-align: center;
+  padding: 30px 0;
+}
