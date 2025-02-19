@@ -12,8 +12,8 @@ export interface TableComponentProps {
     header: RowTableI[];
     rows: TableComponentI[];
     indexKey: number;
-    deleteAction: (id: string, label: string) => void;
-    editAction: (id: string, label: string) => void;
+    deleteAction: (id: string, label: string, index: number) => void;
+    editAction: (id: string, label: string, index: number) => void;
 }
 
 export interface DialogComponentProps {
@@ -21,4 +21,13 @@ export interface DialogComponentProps {
     open: boolean;
     title: string;
     children: React.ReactNode;
+}
+
+export interface ProductFormI {
+    id: string;
+    nombre: string;
+    lineaNegocio: string;
+    valorVenta: string;
+    otrosCostos: number;
+    insumos: string[];
 }

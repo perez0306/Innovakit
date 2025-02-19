@@ -13,6 +13,7 @@ import TableRow from "@mui/material/TableRow";
 import { styled } from "@mui/material/styles";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import { FC } from "react";
 import { IconButton } from "@mui/material";
 
@@ -56,24 +57,26 @@ const TableComponent: FC<TableComponentProps> = ({
       </TableHead>
       <TableBody>
         {rows.length > 0 ? (
-          rows.map((row: TableComponentI) => {
+          rows.map((row: TableComponentI, index: number) => {
             return (
               <StyledTableRow key={`${row.key}-${row.data?.[indexKey]?.label}`}>
-                {row.data.map((item: RowTableI) => (
-                  <StyledTableCell align="center">{item.label}</StyledTableCell>
+                {row.data.map((item: RowTableI, index: number) => (
+                  <StyledTableCell align="center" key={`${row.key}-${row.data?.[index]?.label}`}>
+                    {item.label}
+                  </StyledTableCell>
                 ))}
                 {/* Actions */}
                 <StyledTableCell align="center">
                   <div className={styles.actions}>
                     <IconButton
                       size="medium"
-                      onClick={() => editAction(row.key, row.data?.[0]?.label)}
+                      onClick={() => editAction(row.key, row.data?.[0]?.label, index)}
                     >
                       <EditIcon className={styles.edit} />
                     </IconButton>
                     <IconButton
                       onClick={() =>
-                        deleteAction(row.key, row.data?.[0]?.label)
+                        deleteAction(row.key, row.data?.[0]?.label, index)
                       }
                       size="medium"
                     >

@@ -1,14 +1,18 @@
 import DialogComponent from "@/components/shared/dialog";
-import { useState } from "react";
+import { FC, useEffect, useState } from "react";
 import styles from "./index.module.css";
 import supabase from "@/utils/supabase";
 import { fetchDataInsumo, fetchDataVendor } from "@/context/refesh";
 import { useAppContext } from "@/context/store";
 import Select from "react-select";
-import { formatSelectInsumo } from "@/utils/formated";
+import { SelectI } from "@/typings/store";
+import { getCostFormat } from "@/utils/formated";
 
-const FilterTable = () => {
+const FilterTable: FC<{ vendorOptions: SelectI[] }> = ({
+  vendorOptions,
+}) => {
   const [openModal, setOpenModal] = useState(false);
+  const [error, setError] = useState("");
   const [id, setId] = useState("");
   const [name, setName] = useState("");
   const [classification, setClassification] = useState("");
@@ -18,7 +22,7 @@ const FilterTable = () => {
     value: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { setVendor, vendor, setSuplies } = useAppContext();
+  const { setVendor, setSuplies } = useAppContext();
 
   const onCreate = () => {
     setOpenModal(true);
@@ -36,16 +40,23 @@ const FilterTable = () => {
       .from("insumos")
       .insert([
         {
-          id: id,
+          id: Number(id),
           descripcion: name,
           clasificacion: classification,
           proveedor: optionVendor.value,
-          costo: cost,
+          costos: getCostFormat(Number(cost)),
         },
       ])
       .select();
 
     if (error) {
+      if (
+        error.message.includes("duplicate key value violates unique constraint")
+      ) {
+        setError("¡El Insumo ya existe!");
+      } else {
+        setError("¡Error al crear el Insumo!");
+      }
       setIsSubmitting(false);
       return;
     }
@@ -56,7 +67,14 @@ const FilterTable = () => {
     closeModal();
   };
 
-  const vendorOptions = formatSelectInsumo(vendor);
+  useEffect(() => {
+    setId("");
+    setName("");
+    setClassification("");
+    setCost("");
+    setOptionVendor({ label: "Seleccione", value: "" });
+    setError("");
+  }, [openModal]);
 
   return (
     <div className={styles.filterContainer}>
@@ -70,8 +88,9 @@ const FilterTable = () => {
           handleClose={closeModal}
         >
           <form className={styles.form} onSubmit={actionSend}>
+            {error && <p className={styles.error}>{error}</p>}
             <input
-              type="text"
+              type="number"
               placeholder="ID"
               value={id}
               onChange={(e) => setId(e.target.value)}
@@ -114,6 +133,13 @@ const FilterTable = () => {
               className={styles.input}
               required
             />
+            <button
+              className={styles.buttonClose}
+              disabled={isSubmitting}
+              onClick={closeModal}
+            >
+              Cerrar
+            </button>
             <button
               type="submit"
               className={styles.button}

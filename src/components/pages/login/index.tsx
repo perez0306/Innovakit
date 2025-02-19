@@ -16,13 +16,10 @@ const Login = () => {
         e.preventDefault();
         setIsSubmitting(true);
 
-
         let { data, error } = await supabase.auth.signInWithPassword({
             email: username,
             password: password,
         })
-
-        console.log(data);
 
         if (error) {
             setError(error.message);

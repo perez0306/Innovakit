@@ -11,6 +11,10 @@
   color: rgb(136, 16, 16);
 }
 
+.view {
+  color: rgb(107, 101, 101);
+}
+
 .empty {
   text-align: center;
   padding: 30px 0;
