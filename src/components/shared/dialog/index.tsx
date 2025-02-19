@@ -1,17 +1,14 @@
 import React, { FC } from "react";
-import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
 import Slide from "@mui/material/Slide";
 import { TransitionProps } from "@mui/material/transitions";
 import { DialogComponentProps } from "@/typings/components";
-import styles from "./index.module.css";
 
 const Transition = React.forwardRef(function Transition(
   props: TransitionProps & {
-    children: React.ReactElement<any, any>;
+    children: React.ReactElement<unknown, string | React.JSXElementConstructor<unknown>>;
   },
   ref: React.Ref<unknown>
 ) {

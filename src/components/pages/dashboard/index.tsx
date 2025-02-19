@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import styles from "./index.module.css";
 import { ProductI } from "../../../typings/store";
 import { fetchDataProductDashboard } from "@/context/refesh";
-import { useAppContext } from "@/context/store";
 
 interface ProductAnalysisI {
     lowMarginProducts: ProductI[];

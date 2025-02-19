@@ -1,5 +1,5 @@
 "use client";
-import { VendorI, TableStateI, CategoryI } from "@/typings/store";
+import { TableStateI, CategoryI } from "@/typings/store";
 import { createContext, useContext, useState, ReactNode } from "react";
 
 interface AppState {

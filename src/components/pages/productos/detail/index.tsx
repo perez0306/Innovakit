@@ -229,7 +229,7 @@ const ProductDetail = ({ isCreate, id }: { isCreate?: boolean, id?: string }) =>
                         control={control}
                         render={({ field: { value, onChange } }) => (
                             <div className={styles.insumosContainer}>
-                                {value.map((item: any, index: number) => (
+                                {value.map((item: string, index: number) => (
                                     <div key={`${item}-${index}`}>
                                         <div className={styles.insumoItem}>
                                             <Select
@@ -242,7 +242,7 @@ const ProductDetail = ({ isCreate, id }: { isCreate?: boolean, id?: string }) =>
                                                         getCost(option?.value || '', index);
                                                     }
                                                 }}
-                                                options={useMemoInsumo as any}
+                                                options={useMemoInsumo}
                                                 placeholder="Seleccione un insumo"
                                                 className={styles.insumoSelect}
                                             />
@@ -313,10 +313,10 @@ const ProductDetail = ({ isCreate, id }: { isCreate?: boolean, id?: string }) =>
                         <div className={styles.cardValue}>
                             <span className={styles.moneda}>$</span>
                             <span className={styles.cantidad}>{formatMiles(margen)}</span>
-                            <span className={Number(percentageMargen(margen, costoTotal + costoTotalInsumos)) > 30 ?
+                            <span className={Number(percentageMargen(margen, Number(valorVenta))) > 30 ?
                                 styles.porcentajePositivo :
                                 styles.porcentajeNegativo}>
-                                ({percentageMargen(margen, costoTotal + costoTotalInsumos)}%)
+                                ({percentageMargen(margen, Number(valorVenta))}%)
                             </span>
                         </div>
                     </div>

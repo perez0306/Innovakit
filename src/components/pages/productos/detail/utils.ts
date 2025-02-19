@@ -1,5 +1,6 @@
 import { ProductFormI } from "@/typings/components";
 import supabase from "@/utils/supabase";
+import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import * as yup from "yup";
 
 export const schema = yup.object().shape({
@@ -31,7 +32,7 @@ export const percentageCosto = (precioOriginal: number, precioNuevo: number) => 
   return porcentajeAumento.toFixed(2);
 }
 
-export const postProduct = async (dataForm: ProductFormI, ventaFormateada: string, insumosFormateados: string[], router: any) => {
+export const postProduct = async (dataForm: ProductFormI, ventaFormateada: string, insumosFormateados: string[], router: AppRouterInstance) => {
   const { error } = await supabase
     .from('productos')
     .insert([
@@ -51,7 +52,7 @@ export const postProduct = async (dataForm: ProductFormI, ventaFormateada: strin
   router.push('/productos');
 }
 
-export const updateProduct = async (dataForm: ProductFormI, ventaFormateada: string, insumosFormateados: string[], router: any) => {
+export const updateProduct = async (dataForm: ProductFormI, ventaFormateada: string, insumosFormateados: string[], router: AppRouterInstance) => {
   const { error } = await supabase
     .from('productos')
     .update({ id: dataForm.id, nombre: dataForm.nombre, linea_negocio: dataForm.lineaNegocio, venta: ventaFormateada, costo_otros: dataForm.otrosCostos, insumo: insumosFormateados })

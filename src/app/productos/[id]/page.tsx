@@ -5,7 +5,7 @@ import Menu from "@/layout/menu";
 import { useAuthenticated } from "@/utils/authenticated";
 
 const ProductosId = () => {
-    const { id } = useParams();
+    const { id } = useParams() as { id: string };
     useAuthenticated();
 
     return (

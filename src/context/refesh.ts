@@ -72,7 +72,7 @@ export const fetchDataProduct = async (
   }
 
   const dataProduct = await Promise.all(data.map(async (item: ProductI) => {
-    let { data: categorias } = await supabase
+    const { data: categorias } = await supabase
       .from('categorias')
       .select()
       .eq("id", item.linea_negocio)
@@ -95,7 +95,7 @@ export const fetchDataProductDashboard = async () => {
   }
 
   const dataProduct = await Promise.all(data.map(async (item: ProductI) => {
-    let { data: categorias } = await supabase
+    const { data: categorias } = await supabase
       .from('categorias')
       .select()
       .eq("id", item.linea_negocio)

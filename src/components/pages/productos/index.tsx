@@ -46,6 +46,7 @@ const Productos = () => {
 
     useEffect(() => {
         fetchDataProduct(setProduct);
+          // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return (

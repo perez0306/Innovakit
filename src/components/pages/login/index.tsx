@@ -16,7 +16,7 @@ const Login = () => {
         e.preventDefault();
         setIsSubmitting(true);
 
-        let { data, error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabase.auth.signInWithPassword({
             email: username,
             password: password,
         })
