@@ -16,9 +16,9 @@ import { desformatearValorCosto } from "../../costos/utils";
 import ReturnComponent from "@/components/shared/return";
 const ProductDetail = ({ isCreate, id }: { isCreate?: boolean, id?: string }) => {
     const router = useRouter();
-    const { setCategory, category, setCosts, categorySelected } = useAppContext();
+    const { setCategory, category, setCosts, categorySelected, costs } = useAppContext();
     const [insumo, setInsumo] = useState<SupliesI[]>([]);
-    const [costs, setCostes] = useState<number[]>([]);
+    const [costes, setCostes] = useState<number[]>([]);
     const [costsLastYear, setCostsLastYear] = useState<number[]>([]);
     const [costoTotalInsumos, setCostoTotalInsumos] = useState(0);
     const { register, handleSubmit, formState: { errors }, control, watch, reset, setValue } = useForm<ProductFormI>({
@@ -96,10 +96,10 @@ const ProductDetail = ({ isCreate, id }: { isCreate?: boolean, id?: string }) =>
     }
 
     const costoTotal = useMemo(() => {
-        return costs.reduce((sum, item) => {
+        return costes.reduce((sum, item) => {
             return Number(sum) + Number(item);
         }, 0);
-    }, [costs]);
+    }, [costes]);
 
     const costoTotalLastYear = useMemo(() => {
         return costsLastYear.reduce((sum, item) => {
@@ -122,8 +122,8 @@ const ProductDetail = ({ isCreate, id }: { isCreate?: boolean, id?: string }) =>
 
     const { margen: margenOperating, porcentaje: porcentajeOperating } = useMemo(() => {
         const valorVentaFormateado = valorVenta?.toString().replace(/,/g, '') || '0';
-        return percentageMargenOperating(Number(valorVentaFormateado), margenGross);
-    }, [valorVenta, margenGross]);
+        return percentageMargenOperating(Number(valorVentaFormateado), margenGross, costs);
+    }, [valorVenta, margenGross, costes]);
 
     const { margen: margenNeto, porcentaje: porcentajeNeto } = useMemo(() => {
         const valorVentaFormateado = valorVenta?.toString().replace(/,/g, '') || '0';
@@ -269,7 +269,7 @@ const ProductDetail = ({ isCreate, id }: { isCreate?: boolean, id?: string }) =>
                                                 placeholder="Seleccione un insumo"
                                                 className={styles.insumoSelect}
                                             />
-                                            <p className={styles.cantidadInput}>${formatMiles(costs?.[index] ?? 0)}</p>
+                                            <p className={styles.cantidadInput}>${formatMiles(costes?.[index] ?? 0)}</p>
                                             <button
                                                 type="button"
                                                 onClick={() => {

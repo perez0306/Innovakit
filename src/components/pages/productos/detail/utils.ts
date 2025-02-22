@@ -1,4 +1,3 @@
-import { useAppContext } from "@/context/store";
 import { ProductFormI } from "@/typings/components";
 import { CostI } from "@/typings/store";
 import supabase from "@/utils/supabase";
@@ -78,14 +77,11 @@ export const percentageMargenGross = (precio: number, costo: number) => {
   return { margen, porcentaje };
 }
 
-export const percentageMargenOperating = (precio: number, margenGross: number) => {
+export const percentageMargenOperating = (precio: number, margenGross: number, costs: CostI[]) => {
   if (precio === 0 || margenGross === 0) {
     return { margen: 0, porcentaje: 0 };
   }
-
-  const { costs } = useAppContext();
   const costoTotal = costs.reduce((acc: number, curr: CostI) => acc + curr.valor * precio, 0);
-
   const margen = margenGross - costoTotal;
   const porcentaje = ((margen / precio) * 100).toFixed(2);
   return { margen, porcentaje };

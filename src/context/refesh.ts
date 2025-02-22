@@ -1,6 +1,7 @@
 import { formatMiles, formatProduct, formatSuplies, formatVendor, getCostValue } from "@/utils/formated";
 import supabase from "@/utils/supabase";
 import { CategoryI, CostI, ProductI, SupliesI, SupliesStateI, TableStateI } from "@/typings/store";
+import { PostgrestError } from "@supabase/supabase-js";
 
 export const fetchDataVendor = async (
   setVendor: (vendors: TableStateI[]) => void
@@ -76,7 +77,7 @@ export const fetchDataProduct = async (
   }
 };
 
-const getProduct = async (error: any, data: any[] | null) => {
+const getProduct = async (error: PostgrestError | null, data: ProductI[] | null) => {
   if (error || !data) {
     return [];
   }
