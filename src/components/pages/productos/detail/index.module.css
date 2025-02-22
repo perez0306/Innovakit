@@ -115,10 +115,17 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1rem;
-  margin: 2rem 0;
+  margin: 0 0 0.5rem;
   padding: 1rem;
   background-color: #f8f9fa;
   border-radius: 8px;
+}
+
+.resumenFinancieroTitle {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 0;
+  grid-column: 1 / 4;
 }
 
 .cardResumen {

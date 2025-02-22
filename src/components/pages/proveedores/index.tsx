@@ -7,7 +7,7 @@ import { useAppContext } from "@/context/store";
 import { header } from "./utils";
 import { fetchDataVendor } from "@/context/refesh";
 import DialogComponent from "@/components/shared/dialog";
-
+import ReturnComponent from "@/components/shared/return";
 const ProveedoresPage = () => {
   const [openModal, setOpenModal] = useState<boolean>(false);
   const [editModal, setEditModal] = useState<boolean>(false);
@@ -83,6 +83,7 @@ const ProveedoresPage = () => {
 
   return (
     <div className={styles.content}>
+      <ReturnComponent />
       <h1>Proveedores</h1>
       <FilterTable />
       <TableComponent

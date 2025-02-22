@@ -3,34 +3,37 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import styles from "./index.module.css";
 import { useEffect, useMemo, useState } from "react";
-import { getCostOther, percentageCosto, postProduct, schema, updateProduct } from "./utils";
+import { getCostOther, percentageCosto, percentageMargenGross, percentageMargenNeto, percentageMargenOperating, postProduct, schema, updateProduct } from "./utils";
 import { ProductFormI } from "@/typings/components";
-import { fetchDataCategory, getDataInsumo } from "@/context/refesh";
-import { formatCategory, formatSelectInsumoOptions, percentageMargen, formatMiles, getCostValue, getCostValueLastYear } from "@/utils/formated";
+import { fetchDataCategory, fetchDataCosts, getDataInsumo } from "@/context/refesh";
+import { formatCategory, formatSelectInsumoOptions, formatMiles, getCostValue, getCostValueLastYear } from "@/utils/formated";
 import Select from "react-select";
 import { Controller } from "react-hook-form";
 import { SupliesI } from "@/typings/store";
 import supabase from "@/utils/supabase";
 import { useRouter } from "next/navigation";
-
+import { desformatearValorCosto } from "../../costos/utils";
+import ReturnComponent from "@/components/shared/return";
 const ProductDetail = ({ isCreate, id }: { isCreate?: boolean, id?: string }) => {
     const router = useRouter();
-    const { setCategory, category } = useAppContext();
-    const { register, handleSubmit, formState: { errors }, control, watch, reset } = useForm<ProductFormI>({
+    const { setCategory, category, setCosts, categorySelected } = useAppContext();
+    const [insumo, setInsumo] = useState<SupliesI[]>([]);
+    const [costs, setCostes] = useState<number[]>([]);
+    const [costsLastYear, setCostsLastYear] = useState<number[]>([]);
+    const [costoTotalInsumos, setCostoTotalInsumos] = useState(0);
+    const { register, handleSubmit, formState: { errors }, control, watch, reset, setValue } = useForm<ProductFormI>({
         resolver: yupResolver(schema),
         defaultValues: isCreate ? { insumos: [""] } : {
             insumos: [""]
         }
     });
 
-    const [insumo, setInsumo] = useState<SupliesI[]>([]);
-    const [costs, setCosts] = useState<number[]>([]);
-    const [costsLastYear, setCostsLastYear] = useState<number[]>([]);
-    const [costoTotalInsumos, setCostoTotalInsumos] = useState(0);
-    const [margen, setMargen] = useState(0);
+    const valorVenta = watch('valorVenta');
+    const otrosCostos = watch('otrosCostos');
 
     const refectData = () => {
         fetchDataCategory(setCategory);
+        fetchDataCosts(setCosts);
     }
 
     const onSubmit = async (dataForm: ProductFormI) => {
@@ -42,9 +45,9 @@ const ProductDetail = ({ isCreate, id }: { isCreate?: boolean, id?: string }) =>
         });
 
         if (isCreate) {
-            postProduct(dataForm, ventaFormateada, insumosFormateados, router);
+            postProduct(dataForm, ventaFormateada, insumosFormateados, router, categorySelected);
         } else {
-            updateProduct(dataForm, ventaFormateada, insumosFormateados, router);
+            updateProduct(dataForm, ventaFormateada, insumosFormateados, router, categorySelected);
         }
     };
 
@@ -67,7 +70,7 @@ const ProductDetail = ({ isCreate, id }: { isCreate?: boolean, id?: string }) =>
         const getInsumo = insumo.find(i => i.id === id && i.proveedor === proveedor);
         const costAux = getCostValue(getInsumo?.costos || {}) || 0;
         const costAuxLastYear = getCostValueLastYear(getInsumo?.costos || {}) || 0;
-        setCosts(prev => {
+        setCostes(prev => {
             const newCosts = [...prev];
             newCosts[index] = costAux;
             return newCosts;
@@ -80,7 +83,7 @@ const ProductDetail = ({ isCreate, id }: { isCreate?: boolean, id?: string }) =>
     }
 
     const deleteCost = (index: number) => {
-        setCosts(prev => {
+        setCostes(prev => {
             const newCosts = [...prev];
             newCosts.splice(index, 1);
             return newCosts;
@@ -112,6 +115,21 @@ const ProductDetail = ({ isCreate, id }: { isCreate?: boolean, id?: string }) =>
         return formatSelectInsumoOptions(insumo);
     }, [insumo]);
 
+    const { margen: margenGross, porcentaje: porcentajeGross } = useMemo(() => {
+        const valorVentaFormateado = valorVenta?.toString().replace(/,/g, '') || '0';
+        return percentageMargenGross(Number(valorVentaFormateado), costoTotal);
+    }, [valorVenta, costoTotal]);
+
+    const { margen: margenOperating, porcentaje: porcentajeOperating } = useMemo(() => {
+        const valorVentaFormateado = valorVenta?.toString().replace(/,/g, '') || '0';
+        return percentageMargenOperating(Number(valorVentaFormateado), margenGross);
+    }, [valorVenta, margenGross]);
+
+    const { margen: margenNeto, porcentaje: porcentajeNeto } = useMemo(() => {
+        const valorVentaFormateado = valorVenta?.toString().replace(/,/g, '') || '0';
+        return percentageMargenNeto(Number(valorVentaFormateado), margenOperating);
+    }, [valorVenta, margenOperating]);
+
     useEffect(() => {
         refectData();
         getDataInsumo().then(async (data) => {
@@ -131,6 +149,19 @@ const ProductDetail = ({ isCreate, id }: { isCreate?: boolean, id?: string }) =>
             setInsumo(sipliesData)
         }).catch(() => { setInsumo([]) });
 
+        const getCostos = async () => {
+            const { data: costosData, error } = await supabase
+                .from("costos")
+                .select("*");
+
+            if (!error && costosData) {
+                const sumaCostos = costosData.reduce((acc, costo) => acc + (costo.valor || 0), 0);
+                const sumFormat = desformatearValorCosto(sumaCostos);
+                setValue("otrosCostos", sumFormat);
+            }
+        };
+
+        getCostos();
     }, []);
 
     useEffect(() => {
@@ -141,7 +172,6 @@ const ProductDetail = ({ isCreate, id }: { isCreate?: boolean, id?: string }) =>
                     nombre: data[0]?.nombre,
                     lineaNegocio: data[0]?.linea_negocio,
                     valorVenta: data[0]?.venta,
-                    otrosCostos: data[0]?.costo_otros,
                     insumos: data[0]?.insumo,
                 });
 
@@ -153,19 +183,12 @@ const ProductDetail = ({ isCreate, id }: { isCreate?: boolean, id?: string }) =>
     }, [insumo]);
 
     useEffect(() => {
-        const valorVentaFormateado = valorVenta?.toString().replace(/,/g, '') ?? '0';
-        setMargen(Number(valorVentaFormateado) - (costoTotal + costoTotalInsumos));
-    }, [costoTotal, costoTotalInsumos]);
-
-    useEffect(() => {
         getCostOther(otrosCostos, setCostoTotalInsumos, costoTotal);
     }, [costoTotal]);
 
-    const valorVenta = watch('valorVenta');
-    const otrosCostos = watch('otrosCostos');
-
     return (
         <div className={styles.container}>
+            <ReturnComponent />
             <h1>{isCreate ? "Crear Producto" : "Editar Producto"}</h1>
             <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
                 <div className={styles.formGroup}>
@@ -217,7 +240,7 @@ const ProductDetail = ({ isCreate, id }: { isCreate?: boolean, id?: string }) =>
                             const value = e.target.value.replace(/\D/g, "");
                             const formattedValue = value.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
                             e.target.value = formattedValue;
-                            setMargen(Number(value) - (costoTotal + costoTotalInsumos));
+                            setValue("valorVenta", formattedValue);
                         }}
                     />
                     {errors.valorVenta && <span className={styles.error}>{errors.valorVenta.message}</span>}
@@ -283,14 +306,13 @@ const ProductDetail = ({ isCreate, id }: { isCreate?: boolean, id?: string }) =>
                         id="otrosCostos"
                         type="number"
                         placeholder="Ingrese porcentaje (0-100)"
-                        onChange={(e) => {
-                            const value = Number(e.target.value);
-                            getCostOther(value, setCostoTotalInsumos, costoTotal);
-                        }}
+                        disabled
+                        value={watch("otrosCostos")}
                     />
                     {errors.otrosCostos && <span className={styles.error}>{errors.otrosCostos.message}</span>}
                 </div>
                 <div className={styles.resumenFinanciero}>
+                    <h2 className={styles.resumenFinancieroTitle}>Resumen Costos</h2>
                     <div className={styles.cardResumen}>
                         <h3 className={styles.cardTitle}>Costo Total de Insumos</h3>
                         <div className={styles.cardValue}>
@@ -308,15 +330,42 @@ const ProductDetail = ({ isCreate, id }: { isCreate?: boolean, id?: string }) =>
                             </span>
                         </div>
                     </div>
+                </div>
+                <div className={styles.resumenFinanciero}>
+                    <h2 className={styles.resumenFinancieroTitle}>Resumen Margenes</h2>
                     <div className={styles.cardResumen}>
-                        <h3 className={styles.cardTitle}>Margen</h3>
+                        <h3 className={styles.cardTitle}>Margen Bruto</h3>
                         <div className={styles.cardValue}>
                             <span className={styles.moneda}>$</span>
-                            <span className={styles.cantidad}>{formatMiles(margen)}</span>
-                            <span className={Number(percentageMargen(margen, Number(valorVenta))) > 30 ?
+                            <span className={styles.cantidad}>{formatMiles(margenGross)}</span>
+                            <span className={Number(porcentajeGross) > 30 ?
                                 styles.porcentajePositivo :
                                 styles.porcentajeNegativo}>
-                                ({percentageMargen(margen, Number(valorVenta))}%)
+                                ({porcentajeGross}%)
+                            </span>
+                        </div>
+                    </div>
+                    <div className={styles.cardResumen}>
+                        <h3 className={styles.cardTitle}>Margen Operacional</h3>
+                        <div className={styles.cardValue}>
+                            <span className={styles.moneda}>$</span>
+                            <span className={styles.cantidad}>{formatMiles(margenOperating)}</span>
+                            <span className={Number(porcentajeOperating) > 30 ?
+                                styles.porcentajePositivo :
+                                styles.porcentajeNegativo}>
+                                ({porcentajeOperating}%)
+                            </span>
+                        </div>
+                    </div>
+                    <div className={styles.cardResumen}>
+                        <h3 className={styles.cardTitle}>Margen Neto</h3>
+                        <div className={styles.cardValue}>
+                            <span className={styles.moneda}>$</span>
+                            <span className={styles.cantidad}>{formatMiles(margenNeto)}</span>
+                            <span className={Number(porcentajeNeto) > 30 ?
+                                styles.porcentajePositivo :
+                                styles.porcentajeNegativo}>
+                                ({porcentajeNeto}%)
                             </span>
                         </div>
                     </div>

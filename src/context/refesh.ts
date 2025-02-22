@@ -1,6 +1,6 @@
 import { formatMiles, formatProduct, formatSuplies, formatVendor, getCostValue } from "@/utils/formated";
 import supabase from "@/utils/supabase";
-import { CategoryI, ProductI, SupliesI, SupliesStateI, TableStateI } from "@/typings/store";
+import { CategoryI, CostI, ProductI, SupliesI, SupliesStateI, TableStateI } from "@/typings/store";
 
 export const fetchDataVendor = async (
   setVendor: (vendors: TableStateI[]) => void
@@ -62,13 +62,23 @@ export const fetchDataInsumo = async (
 };
 
 export const fetchDataProduct = async (
-  setProduct: (product: TableStateI[]) => void
+  setProduct: (product: TableStateI[]) => void,
+  categorySelected: string
 ) => {
-  const { data, error } = await supabase.from("productos").select().order("id", { ascending: true });
+  if (categorySelected) {
+    const { data, error } = await supabase.from("productos").select().order("id", { ascending: true }).eq("categoria", categorySelected);
+    const productFormat = await getProduct(error, data);
+    setProduct(productFormat);
+  } else {
+    const { data, error } = await supabase.from("productos").select().order("id", { ascending: true });
+    const productFormat = await getProduct(error, data);
+    setProduct(productFormat);
+  }
+};
 
-  if (error) {
-    setProduct([]);
-    return;
+const getProduct = async (error: any, data: any[] | null) => {
+  if (error || !data) {
+    return [];
   }
 
   const dataProduct = await Promise.all(data.map(async (item: ProductI) => {
@@ -84,9 +94,8 @@ export const fetchDataProduct = async (
     };
   }));
 
-  const productFormat: TableStateI[] = formatProduct(dataProduct);
-  setProduct(productFormat);
-};
+  return formatProduct(dataProduct);
+}
 
 export const fetchDataProductDashboard = async () => {
   const { data, error } = await supabase.from("productos").select();
@@ -119,5 +128,17 @@ export const fetchDataCategory = async (
     return;
   }
   setCategory(data);
+};
+
+
+export const fetchDataCosts = async (
+  setCosts: (costs: CostI[]) => void
+) => {
+  const { data, error } = await supabase.from("costos").select().order("id", { ascending: true });
+  if (error) {
+    setCosts([]);
+    return;
+  }
+  setCosts(data);
 };
 

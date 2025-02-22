@@ -63,6 +63,7 @@ export const formatCategory = (category: CategoryI[]): SelectI[] => {
 };
 
 export const percentageMargen = (total: number, cost: number) => {
+  console.log({total, cost});
   if (cost === 0) return 0;
   return ((total / cost) * 100).toFixed(2)
 }

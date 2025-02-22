@@ -13,7 +13,7 @@ const Productos = () => {
     const [openModal, setOpenModal] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(false);
     const [productState, setProductState] = useState<{ id: string, index: number }>();
-    const { product, setProduct } = useAppContext();
+    const { product, setProduct, categorySelected } = useAppContext();
     const router = useRouter();
     const deleteAction = (id: string, name: string, index: number) => {
         setOpenModal(true);
@@ -39,15 +39,15 @@ const Productos = () => {
             console.log(error);
         }
 
-        fetchDataProduct(setProduct);
+        fetchDataProduct(setProduct, categorySelected);
         setOpenModal(false);
         setLoading(false);
     }
 
     useEffect(() => {
-        fetchDataProduct(setProduct);
+        fetchDataProduct(setProduct, categorySelected);
           // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [categorySelected]);
 
     return (
         <div className={styles.content}>

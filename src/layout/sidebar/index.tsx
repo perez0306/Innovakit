@@ -7,6 +7,7 @@ import { List, ListItem, ListItemButton, ListItemIcon, ListItemText } from '@mui
 import HandymanIcon from '@mui/icons-material/Handyman';
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 import InventoryIcon from '@mui/icons-material/Inventory';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import { useRouter } from 'next/navigation';
 
 const Sidebar = () => {
@@ -20,13 +21,15 @@ const Sidebar = () => {
     const Icon: { [key: number]: JSX.Element } = {
         0: <PeopleAltIcon />,
         1: <InventoryIcon />,
-        2: <HandymanIcon />
+        2: <HandymanIcon />,
+        3: <AttachMoneyIcon />
     }
 
     const redirect: { [key: number]: string } = {
         0: '/proveedores',
         1: '/insumos',
-        2: '/productos'
+        2: '/productos',
+        3: '/costos'
     }
 
     const onRedirect = (index: number) => {
@@ -39,7 +42,7 @@ const Sidebar = () => {
             <Drawer onClose={onClose} open={open}>
                 <div style={{ background: '#FFF', width: '300px', height: '100vh' }}>
                     <List>
-                        {['Proveedores', 'Insumos', 'Productos'].map((text, index) => (
+                        {['Proveedores', 'Insumos', 'Productos', 'Costos'].map((text, index) => (
                             <ListItem key={text} disablePadding onClick={() => onRedirect(index)}>
                                 <ListItemButton>
                                     <ListItemIcon>

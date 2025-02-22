@@ -52,3 +52,9 @@ export interface CategoryI {
   child: string;
   parent: string;
 }
+
+export interface CostI {
+  id: string;
+  nombre: string;
+  valor: number;
+}

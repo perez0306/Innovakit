@@ -9,6 +9,7 @@ import { useAppContext } from "@/context/store";
 import supabase from "@/utils/supabase";
 import Select from "react-select";
 import { formatSelectInsumo, getCostFormat } from "@/utils/formated";
+import ReturnComponent from "@/components/shared/return";
 
 const Insumos = () => {
   const [openModal, setOpenModal] = useState<boolean>(false);
@@ -128,6 +129,7 @@ const Insumos = () => {
 
   return (
     <div className={styles.content}>
+      <ReturnComponent />
       <h1>Insumos</h1>
       <FilterTable vendorOptions={vendorOptions} />
       <TableComponent
