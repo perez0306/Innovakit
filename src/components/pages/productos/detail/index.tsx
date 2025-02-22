@@ -2,11 +2,11 @@ import { useAppContext } from "@/context/store";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import styles from "./index.module.css";
-import { useEffect, useMemo, useState } from "react";
+import { use, useEffect, useMemo, useState } from "react";
 import { getCostOther, percentageCosto, percentageMargenGross, percentageMargenNeto, percentageMargenOperating, postProduct, schema, updateProduct } from "./utils";
 import { ProductFormI } from "@/typings/components";
 import { fetchDataCategory, fetchDataCosts, getDataInsumo } from "@/context/refesh";
-import { formatCategory, formatSelectInsumoOptions, formatMiles, getCostValue, getCostValueLastYear } from "@/utils/formated";
+import { formatCategory, formatSelectInsumoOptions, formatMiles, getCostValue, getCostValueLastYear, getCategoryProduct } from "@/utils/formated";
 import Select from "react-select";
 import { Controller } from "react-hook-form";
 import { SupliesI } from "@/typings/store";
@@ -14,11 +14,13 @@ import supabase from "@/utils/supabase";
 import { useRouter } from "next/navigation";
 import { desformatearValorCosto } from "../../costos/utils";
 import ReturnComponent from "@/components/shared/return";
+
 const ProductDetail = ({ isCreate, id }: { isCreate?: boolean, id?: string }) => {
     const router = useRouter();
     const { setCategory, category, setCosts, categorySelected, costs } = useAppContext();
     const [insumo, setInsumo] = useState<SupliesI[]>([]);
     const [costes, setCostes] = useState<number[]>([]);
+    const [cantidad, setCantidad] = useState<number[]>([]);
     const [costsLastYear, setCostsLastYear] = useState<number[]>([]);
     const [costoTotalInsumos, setCostoTotalInsumos] = useState(0);
     const { register, handleSubmit, formState: { errors }, control, watch, reset, setValue } = useForm<ProductFormI>({
@@ -39,9 +41,9 @@ const ProductDetail = ({ isCreate, id }: { isCreate?: boolean, id?: string }) =>
     const onSubmit = async (dataForm: ProductFormI) => {
         const ventaFormateada = dataForm.valorVenta.toString().replace(/,/g, '');
         const insumosEmptys = dataForm.insumos.filter((insumo) => insumo !== "");
-        const insumosFormateados = insumosEmptys.map((insumo) => {
+        const insumosFormateados = insumosEmptys.map((insumo, index) => {
             const [id, proveedor] = insumo.split('-');
-            return id + "-" + proveedor;
+            return id + "-" + proveedor + "_" + cantidad[index];
         });
 
         if (isCreate) {
@@ -55,7 +57,8 @@ const ProductDetail = ({ isCreate, id }: { isCreate?: boolean, id?: string }) =>
         const { data: productos, error } = await supabase
             .from('productos')
             .select('*')
-            .eq('id', id);
+            .eq('id', id)
+            .eq('categoria', categorySelected);
 
         if (error) {
             alert('Error al obtener el producto');
@@ -65,19 +68,20 @@ const ProductDetail = ({ isCreate, id }: { isCreate?: boolean, id?: string }) =>
         return productos;
     }
 
-    const getCost = (key: string, index: number) => {
-        const [id, proveedor] = key.split('-');
+    const getCost = (key: string, index: number, cantidad: number = 1) => {
+        const [insumoKey, _] = key.split('_');
+        const [id, proveedor] = insumoKey.split('-');
         const getInsumo = insumo.find(i => i.id === id && i.proveedor === proveedor);
         const costAux = getCostValue(getInsumo?.costos || {}) || 0;
         const costAuxLastYear = getCostValueLastYear(getInsumo?.costos || {}) || 0;
         setCostes(prev => {
             const newCosts = [...prev];
-            newCosts[index] = costAux;
+            newCosts[index] = costAux * cantidad;
             return newCosts;
         });
         setCostsLastYear(prev => {
             const newCosts = [...prev];
-            newCosts[index] = costAuxLastYear;
+            newCosts[index] = costAuxLastYear * cantidad;
             return newCosts;
         });
     }
@@ -167,16 +171,26 @@ const ProductDetail = ({ isCreate, id }: { isCreate?: boolean, id?: string }) =>
     useEffect(() => {
         if (!isCreate) {
             getDataProduct().then((data) => {
+                const isumosFormated = data[0]?.insumo.map((insumo: string) => {
+                    const [id, _] = insumo.split('_');
+                    return id;
+                });
                 reset({
                     id: data[0]?.id,
                     nombre: data[0]?.nombre,
                     lineaNegocio: data[0]?.linea_negocio,
-                    valorVenta: data[0]?.venta,
-                    insumos: data[0]?.insumo,
+                    valorVenta: formatMiles(data[0]?.venta),
+                    insumos: isumosFormated,
                 });
 
                 data[0]?.insumo.forEach((insumo: string, index: number) => {
-                    getCost(insumo, index);
+                    const [_, cantidad] = insumo.split('_');
+                    setCantidad(prev => {
+                        const newCantidad = [...prev];
+                        newCantidad[index] = Number(cantidad);
+                        return newCantidad;
+                    });
+                    getCost(insumo, index, Number(cantidad));
                 });
             });
         }
@@ -189,7 +203,7 @@ const ProductDetail = ({ isCreate, id }: { isCreate?: boolean, id?: string }) =>
     return (
         <div className={styles.container}>
             <ReturnComponent />
-            <h1>{isCreate ? "Crear Producto" : "Editar Producto"}</h1>
+            <h1>{isCreate ? "Crear Producto" : "Editar Producto"} - {getCategoryProduct(categorySelected)}</h1>
             <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
                 <div className={styles.formGroup}>
                     <label htmlFor="id">ID</label>
@@ -268,6 +282,24 @@ const ProductDetail = ({ isCreate, id }: { isCreate?: boolean, id?: string }) =>
                                                 options={useMemoInsumo}
                                                 placeholder="Seleccione un insumo"
                                                 className={styles.insumoSelect}
+                                            />
+                                            <input
+                                                defaultValue={cantidad[index] || 1}
+                                                type="number"
+                                                placeholder="Cantidad"
+                                                className={styles.cantidadInput}
+                                                onChange={(e) => {
+                                                    const cantidad = parseInt(e.target.value);
+                                                    if (!isNaN(cantidad)) {
+                                                        getCost(value[index], index, cantidad);
+                                                        setCantidad(prev => {
+                                                            const newCantidad = [...prev];
+                                                            newCantidad[index] = cantidad;
+                                                            return newCantidad;
+                                                        });
+                                                    }
+                                                }}
+                                                min="1"
                                             />
                                             <p className={styles.cantidadInput}>${formatMiles(costes?.[index] ?? 0)}</p>
                                             <button

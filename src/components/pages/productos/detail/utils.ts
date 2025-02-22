@@ -57,6 +57,7 @@ export const updateProduct = async (dataForm: ProductFormI, ventaFormateada: str
     .from('productos')
     .update({ id: dataForm.id, nombre: dataForm.nombre, linea_negocio: dataForm.lineaNegocio, venta: ventaFormateada, insumo: insumosFormateados, categoria: categorySelected })
     .eq('id', dataForm.id)
+    .eq('categoria', categorySelected)
     .select()
 
   if (error) {

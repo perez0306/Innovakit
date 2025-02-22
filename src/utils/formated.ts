@@ -63,7 +63,6 @@ export const formatCategory = (category: CategoryI[]): SelectI[] => {
 };
 
 export const percentageMargen = (total: number, cost: number) => {
-  console.log({total, cost});
   if (cost === 0) return 0;
   return ((total / cost) * 100).toFixed(2)
 }
@@ -96,3 +95,13 @@ export const getIncrementoCosto = (costos: { [key: number]: number }) => {
   const incremento = ((currentCost - lastYearCost) / lastYearCost) * 100;
   return incremento.toFixed(2);
 };
+
+export const categoryProduct = {
+  "1": "General",
+  "2": "Marquesina Cafe",
+  "3": "Marquesina Cacao",
+}
+
+export const getCategoryProduct = (category: string) => {
+  return categoryProduct[category as keyof typeof categoryProduct];
+}
