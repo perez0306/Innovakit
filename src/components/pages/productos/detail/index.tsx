@@ -2,7 +2,7 @@ import { useAppContext } from "@/context/store";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import styles from "./index.module.css";
-import { use, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { getCostOther, percentageCosto, percentageMargenGross, percentageMargenNeto, percentageMargenOperating, postProduct, schema, updateProduct } from "./utils";
 import { ProductFormI } from "@/typings/components";
 import { fetchDataCategory, fetchDataCosts, getDataInsumo } from "@/context/refesh";
@@ -69,7 +69,7 @@ const ProductDetail = ({ isCreate, id }: { isCreate?: boolean, id?: string }) =>
     }
 
     const getCost = (key: string, index: number, cantidad: number = 1) => {
-        const [insumoKey, _] = key.split('_');
+        const [insumoKey] = key.split('_');
         const [id, proveedor] = insumoKey.split('-');
         const getInsumo = insumo.find(i => i.id === id && i.proveedor === proveedor);
         const costAux = getCostValue(getInsumo?.costos || {}) || 0;
@@ -172,7 +172,7 @@ const ProductDetail = ({ isCreate, id }: { isCreate?: boolean, id?: string }) =>
         if (!isCreate) {
             getDataProduct().then((data) => {
                 const isumosFormated = data[0]?.insumo.map((insumo: string) => {
-                    const [id, _] = insumo.split('_');
+                    const [id] = insumo.split('_');
                     return id;
                 });
                 reset({
@@ -184,7 +184,7 @@ const ProductDetail = ({ isCreate, id }: { isCreate?: boolean, id?: string }) =>
                 });
 
                 data[0]?.insumo.forEach((insumo: string, index: number) => {
-                    const [_, cantidad] = insumo.split('_');
+                    const [, cantidad] = insumo.split('_');
                     setCantidad(prev => {
                         const newCantidad = [...prev];
                         newCantidad[index] = Number(cantidad);
