@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+/* import { useEffect, useState } from "react";
 import styles from "./index.module.css";
 import { ProductI } from "../../../typings/store";
 import supabase from "@/utils/supabase";
@@ -74,3 +74,4 @@ export default function Dashboard() {
         </div>
     );
 }
+ */
