@@ -27,7 +27,7 @@ const Login = () => {
         } else {
             localStorage.setItem("token", data?.session?.access_token || "");
             localStorage.setItem("expires", data?.session?.expires_at?.toString() || new Date().toISOString());
-            router.push("/productos");
+            router.push("/dashboard");
         }
 
     };

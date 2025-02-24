@@ -2,7 +2,7 @@
 import Menu from "@/layout/menu";
 import styles from "./page.module.css";
 import {useAuthenticated} from "@/utils/authenticated";
-
+import Dashboard from "@/components/pages/dashboard";
 export default function DashboardPage() {
     useAuthenticated();
 
@@ -10,7 +10,7 @@ export default function DashboardPage() {
         <>
             <Menu />
             <main className={styles.page}>
-                Dashboard
+                <Dashboard />
             </main>
         </>
     );

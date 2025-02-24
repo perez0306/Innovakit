@@ -21,6 +21,7 @@ export interface ProductI {
   nombre: string;
   venta: string;
   category?: string;
+  categoria: string;
 }
 
 export interface SupliesStateI {

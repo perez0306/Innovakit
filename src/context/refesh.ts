@@ -1,6 +1,6 @@
 import { formatMiles, formatProduct, formatSuplies, formatVendor, getCostValue } from "@/utils/formated";
 import supabase from "@/utils/supabase";
-import { CategoryI, CostI, ProductI, SupliesI, SupliesStateI, TableStateI } from "@/typings/store";
+import { CategoryI, CostI, ProductI, SupliesI, SupliesStateI, TableStateI, VendorI } from "@/typings/store";
 import { PostgrestError } from "@supabase/supabase-js";
 
 export const fetchDataVendor = async (
@@ -17,6 +17,17 @@ export const fetchDataVendor = async (
   const vendorFormat: TableStateI[] = formatVendor(data);
   setVendor(vendorFormat);
 };
+
+export const getDataVendor = async (): Promise<VendorI[]> => {
+  const { data, error } = await supabase
+    .from("proveedores")
+    .select()
+    .order("nombre", { ascending: true });
+  if (error) {
+    return [];
+  }
+  return data;
+}
 
 export const getDataInsumo = async (): Promise<SupliesI[]> => {
   const { data, error } = await supabase

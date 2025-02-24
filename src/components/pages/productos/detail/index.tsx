@@ -5,11 +5,11 @@ import styles from "./index.module.css";
 import { useEffect, useMemo, useState } from "react";
 import { getCostOther, percentageCosto, percentageMargenGross, percentageMargenNeto, percentageMargenOperating, postProduct, schema, updateProduct } from "./utils";
 import { ProductFormI } from "@/typings/components";
-import { fetchDataCategory, fetchDataCosts, getDataInsumo } from "@/context/refesh";
+import { fetchDataCategory, fetchDataCosts, getDataInsumo, getDataVendor } from "@/context/refesh";
 import { formatCategory, formatSelectInsumoOptions, formatMiles, getCostValue, getCostValueLastYear, getCategoryProduct } from "@/utils/formated";
 import Select from "react-select";
 import { Controller } from "react-hook-form";
-import { SupliesI } from "@/typings/store";
+import { SupliesI, VendorI } from "@/typings/store";
 import supabase from "@/utils/supabase";
 import { useRouter } from "next/navigation";
 import { desformatearValorCosto } from "../../costos/utils";
@@ -45,12 +45,20 @@ const ProductDetail = ({ isCreate, id }: { isCreate?: boolean, id?: string }) =>
             const [id, proveedor] = insumo.split('-');
             return id + "-" + proveedor + "_" + cantidad[index];
         });
-
+        if (Number(porcentajeNeto) < 20) {
+            await supabase
+                .from('alertas')
+                .insert({
+                    id_producto: dataForm.id,
+                    categoria: categorySelected,
+                });
+        }
         if (isCreate) {
             postProduct(dataForm, ventaFormateada, insumosFormateados, router, categorySelected);
         } else {
             updateProduct(dataForm, ventaFormateada, insumosFormateados, router, categorySelected);
         }
+
     };
 
     const getDataProduct = async () => {
@@ -136,22 +144,21 @@ const ProductDetail = ({ isCreate, id }: { isCreate?: boolean, id?: string }) =>
 
     useEffect(() => {
         refectData();
-        getDataInsumo().then(async (data) => {
-            const sipliesData: SupliesI[] = await Promise.all(
-                data.map(async (item: SupliesI) => {
-                    const { data: dataVendor, error: errorVendor } = await supabase
-                        .from("proveedores")
-                        .select()
-                        .eq("id", item.proveedor);
-                    return {
-                        ...item,
-                        id: String(item.id),
-                        proveedor: errorVendor ? "" : dataVendor?.[0].nombre,
-                    };
-                })
-            );
-            setInsumo(sipliesData)
-        }).catch(() => { setInsumo([]) });
+        getDataVendor().then((vendor: VendorI[]) => {
+            getDataInsumo().then(async (data) => {
+                const sipliesData: SupliesI[] = await Promise.all(
+                    data.map(async (item: SupliesI) => {
+                        const vendorAux = vendor.find(v => v.id === item.proveedor);
+                        return {
+                            ...item,
+                            id: String(item.id),
+                            proveedor: vendorAux?.nombre || "",
+                        };
+                    })
+                );
+                setInsumo(sipliesData)
+            }).catch(() => { setInsumo([]) });
+        });
 
         const getCostos = async () => {
             const { data: costosData, error } = await supabase
@@ -182,7 +189,6 @@ const ProductDetail = ({ isCreate, id }: { isCreate?: boolean, id?: string }) =>
                     valorVenta: formatMiles(data[0]?.venta),
                     insumos: isumosFormated,
                 });
-
                 data[0]?.insumo.forEach((insumo: string, index: number) => {
                     const [, cantidad] = insumo.split('_');
                     setCantidad(prev => {
@@ -276,7 +282,12 @@ const ProductDetail = ({ isCreate, id }: { isCreate?: boolean, id?: string }) =>
                                                         const newInsumos = [...value];
                                                         newInsumos[index] = option?.value || '';
                                                         onChange(newInsumos);
-                                                        getCost(option?.value || '', index);
+                                                        getCost(option?.value || '', index, 1);
+                                                        setCantidad(prev => {
+                                                            const newCantidad = [...prev];
+                                                            newCantidad[index] = 1;
+                                                            return newCantidad;
+                                                        });
                                                     }
                                                 }}
                                                 options={useMemoInsumo}
@@ -308,6 +319,11 @@ const ProductDetail = ({ isCreate, id }: { isCreate?: boolean, id?: string }) =>
                                                     const newInsumos = value.filter((_, i) => i !== index);
                                                     onChange(newInsumos);
                                                     deleteCost(index);
+                                                    setCantidad(prev => {
+                                                        const newCantidad = [...prev];
+                                                        newCantidad.splice(index, 1);
+                                                        return newCantidad;
+                                                    });
                                                 }}
                                                 className={styles.deleteButton}
                                             >
