@@ -79,7 +79,7 @@ export const getCostValueLastYear = (cost: { [key: number]: number }) => {
 };
 
 export const formatMiles = (value: number) => {
-  return Number(value).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  return Number(value).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };
 
 export const getIncrementoCosto = (costos: { [key: number]: number }) => {

@@ -98,28 +98,6 @@ const getProduct = async (error: PostgrestError | null, data: ProductI[] | null)
   return formatProduct(dataProduct);
 }
 
-export const fetchDataProductDashboard = async () => {
-  const { data, error } = await supabase.from("productos").select();
-  if (error) {
-    return [];
-  }
-
-  const dataProduct = await Promise.all(data.map(async (item: ProductI) => {
-    const { data: categorias } = await supabase
-      .from('categorias')
-      .select()
-      .eq("id", item.linea_negocio)
-    return {
-      ...item,
-      linea_negocio: categorias?.[0].child,
-      category: categorias?.[0].parent,
-      venta: formatMiles(Number(item.venta)),
-    };
-  }));
-
-  return dataProduct;
-};
-
 export const fetchDataCategory = async (
   setCategory: (category: CategoryI[]) => void
 ) => {

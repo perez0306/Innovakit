@@ -9,5 +9,6 @@ export const formatearValorCosto = (valor: number) => {
 
 export const desformatearValorCosto = (valor: number) => {
   const valorFormateado = String(valor);
-  return parseFloat(valorFormateado) * 100;
+  const result = parseFloat(valorFormateado) * 100;
+  return result.toFixed(2);
 };

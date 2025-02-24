@@ -161,7 +161,7 @@ const ProductDetail = ({ isCreate, id }: { isCreate?: boolean, id?: string }) =>
             if (!error && costosData) {
                 const sumaCostos = costosData.reduce((acc, costo) => acc + (costo.valor || 0), 0);
                 const sumFormat = desformatearValorCosto(sumaCostos);
-                setValue("otrosCostos", sumFormat);
+                setValue("otrosCostos", Number(sumFormat));
             }
         };
 
@@ -373,7 +373,7 @@ const ProductDetail = ({ isCreate, id }: { isCreate?: boolean, id?: string }) =>
                             <span className={Number(porcentajeGross) > 30 ?
                                 styles.porcentajePositivo :
                                 styles.porcentajeNegativo}>
-                                ({porcentajeGross}%)
+                                ({Number(porcentajeGross).toFixed(2)}%)
                             </span>
                         </div>
                     </div>
@@ -385,7 +385,7 @@ const ProductDetail = ({ isCreate, id }: { isCreate?: boolean, id?: string }) =>
                             <span className={Number(porcentajeOperating) > 30 ?
                                 styles.porcentajePositivo :
                                 styles.porcentajeNegativo}>
-                                ({porcentajeOperating}%)
+                                ({Number(porcentajeOperating).toFixed(2)}%)
                             </span>
                         </div>
                     </div>
@@ -397,7 +397,7 @@ const ProductDetail = ({ isCreate, id }: { isCreate?: boolean, id?: string }) =>
                             <span className={Number(porcentajeNeto) > 30 ?
                                 styles.porcentajePositivo :
                                 styles.porcentajeNegativo}>
-                                ({porcentajeNeto}%)
+                                ({Number(porcentajeNeto).toFixed(2)}%)
                             </span>
                         </div>
                     </div>

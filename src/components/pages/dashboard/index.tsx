@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import styles from "./index.module.css";
 import { ProductI } from "../../../typings/store";
-import { fetchDataProductDashboard } from "@/context/refesh";
+import supabase from "@/utils/supabase";
 
 interface ProductAnalysisI {
     lowMarginProducts: ProductI[];
@@ -18,11 +18,22 @@ export default function Dashboard() {
         averageCostIncrease: 0
     });
 
+    const getDataProduct = async (categorySelected: string) => {
+        const { data: productos, error } = await supabase
+            .from('productos')
+            .select('*')
+            .eq('categoria', categorySelected);
+
+        if (error) {
+            alert('Error al obtener el producto');
+            return [];
+        }
+
+        return productos;
+    }
+
     useEffect(() => {
-        fetchDataProductDashboard().then(data => {
-            const analysisResult = calculateMetrics(data);
-            setAnalysis(analysisResult);
-        });
+
     }, []);
 
     return (
@@ -62,21 +73,4 @@ export default function Dashboard() {
             </div>
         </div>
     );
-}
-
-function calculateMargin(product: ProductI): number {
-    const venta = parseFloat(product.venta);
-    const costoOtros = parseFloat(product.costo_otros);
-    return ((venta - costoOtros) / venta) * 100;
-}
-
-function calculateMetrics(products: ProductI[]): ProductAnalysisI {
-    const margins = products.map(calculateMargin);
-
-    return {
-        lowMarginProducts: products.filter(p => calculateMargin(p) < 20),
-        highMarginProducts: products.filter(p => calculateMargin(p) > 40),
-        averageMargin: margins.reduce((a, b) => a + b, 0) / margins.length,
-        averageCostIncrease: 0 // Esto necesitará datos históricos para calcularlo
-    };
 }

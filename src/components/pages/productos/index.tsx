@@ -34,6 +34,7 @@ const Productos = () => {
             .from('productos')
             .delete()
             .eq('id', productState?.id)
+            .eq('categoria', categorySelected);
 
         if (error) {
             console.log(error);
