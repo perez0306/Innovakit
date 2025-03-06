@@ -1,5 +1,4 @@
 import { ProductFormI } from "@/typings/components";
-import { CostI } from "@/typings/store";
 import supabase from "@/utils/supabase";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import * as yup from "yup";

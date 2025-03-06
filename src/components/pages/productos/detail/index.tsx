@@ -43,8 +43,8 @@ const ProductDetail = ({ isCreate, id }: { isCreate?: boolean, id?: string }) =>
     }
 
     const onSubmit = async (dataForm: ProductFormI) => {
-        const ventaFormateada = dataForm.valorVenta.toString().replace(/,/g, '');
-        const insumosEmptys = dataForm.insumos.filter((insumo) => insumo !== "");
+        const ventaFormateada = dataForm.valorVenta?.toString().replace(/,/g, '') || '0';
+        const insumosEmptys = dataForm.insumos?.filter((insumo) => insumo !== "") || [];
         const insumosFormateados = insumosEmptys.map((insumo, index) => {
             const [id, proveedor] = insumo.split('-');
             return id + "-" + proveedor + "_" + cantidad[index];
@@ -289,7 +289,7 @@ const ProductDetail = ({ isCreate, id }: { isCreate?: boolean, id?: string }) =>
                         control={control}
                         render={({ field: { value, onChange } }) => (
                             <div className={styles.insumosContainer}>
-                                {value.map((item: string, index: number) => (
+                                {value?.map((item: string, index: number) => (
                                     <div key={`${item}-${index}`}>
                                         <div className={styles.insumoItem}>
                                             <Select
@@ -318,7 +318,7 @@ const ProductDetail = ({ isCreate, id }: { isCreate?: boolean, id?: string }) =>
                                                 placeholder="Cantidad"
                                                 className={styles.cantidadInput}
                                                 onChange={(e) => {
-                                                    let cantidad = categorySelected === "1" ? parseInt(e.target.value) : parseFloat(e.target.value);
+                                                    const cantidad = categorySelected === "1" ? parseInt(e.target.value) : parseFloat(e.target.value);
                                                     if (!isNaN(cantidad)) {
                                                         getCost(value[index], index, cantidad);
                                                         setCantidad(prev => {
@@ -354,7 +354,7 @@ const ProductDetail = ({ isCreate, id }: { isCreate?: boolean, id?: string }) =>
                                 <button
                                     type="button"
                                     onClick={() => {
-                                        onChange([...value, ""]);
+                                        onChange([...(value || []), ""]);
                                     }}
                                     className={styles.addButton}
                                 >
