@@ -6,7 +6,7 @@ import { fetchDataInsumo, fetchDataVendor } from "@/context/refesh";
 import { useAppContext } from "@/context/store";
 import Select from "react-select";
 import { SelectI } from "@/typings/store";
-import { getCostFormat } from "@/utils/formated";
+import { formatMiles, formatSuplies, getCostFormat, getCostValue } from "@/utils/formated";
 
 const FilterTable: FC<{ vendorOptions: SelectI[] }> = ({
   vendorOptions,
@@ -78,6 +78,81 @@ const FilterTable: FC<{ vendorOptions: SelectI[] }> = ({
 
   return (
     <div className={styles.filterContainer}>
+      <div className={styles.searchContainer}>
+        <input
+          type="text"
+          placeholder="Buscar por nombre..."
+          className={styles.searchInput}
+          onKeyDown={async (e) => {
+            if (e.key === 'Enter') {
+              const { data, error } = await supabase
+                .from('insumos')
+                .select()
+                .ilike('descripcion', `%${e.currentTarget.value}%`);
+              if (error) {
+                setSuplies([]);
+                return;
+              }
+              const sipliesData = await Promise.all(
+                data.map(async (item) => {
+                  const { data: dataVendor, error: errorVendor } = await supabase
+                    .from("proveedores")
+                    .select()
+                    .eq("id", item.proveedor);
+                  const costo = getCostValue(item.costos);
+                  return {
+                    ...item,
+                    proveedor: {
+                      value: item.proveedor,
+                      label: errorVendor ? "" : dataVendor?.[0].nombre,
+                    },
+                    costo: formatMiles(costo),
+                  };
+                })
+              );
+              const insumoFormat = formatSuplies(sipliesData);
+              setSuplies(insumoFormat);
+            }
+          }}
+        />
+        <button
+          className={styles.searchButton}
+          onClick={async (e) => {
+            const input = e.currentTarget.previousSibling as HTMLInputElement;
+            const { data, error } = await supabase
+              .from('insumos')
+              .select()
+              .ilike('descripcion', `%${input.value}%`);
+            if (error) {
+              setSuplies([]);
+              return;
+            }
+            const sipliesData = await Promise.all(
+              data.map(async (item) => {
+                const { data: dataVendor, error: errorVendor } = await supabase
+                  .from("proveedores")
+                  .select()
+                  .eq("id", item.proveedor);
+                const costo = getCostValue(item.costos);
+                return {
+                  ...item,
+                  proveedor: {
+                    value: item.proveedor,
+                    label: errorVendor ? "" : dataVendor?.[0].nombre,
+                  },
+                  costo: formatMiles(costo),
+                };
+              })
+            );
+            const insumoFormat = formatSuplies(sipliesData);
+            setSuplies(insumoFormat);
+          }}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={styles.searchIcon}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+          </svg>
+        </button>
+      </div>
       <button className={styles.createButton} onClick={onCreate}>
         Crear Insumo
       </button>

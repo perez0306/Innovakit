@@ -30,4 +30,6 @@ export interface ProductFormI {
     valorVenta: string;
     otrosCostos: number;
     insumos: string[];
+    vendedor: number;
+    financiero: number;
 }

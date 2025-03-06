@@ -22,6 +22,27 @@ export interface ProductI {
   venta: string;
   category?: string;
   categoria: string;
+  vendedor: number;
+  financiero: number;
+}
+
+export interface ProductDataI {
+  id: string;
+  nombre: string;
+  linea_negocio: string;
+  venta: string;
+  category?: string;
+  categoria: string;
+  vendedor: number;
+  financiero: number;
+  margenGross: number;
+  margenOperating: number;
+  margenNeto: number;
+  porcentajeGross: string;
+  porcentajeOperating: string;
+  porcentajeNeto: string;
+  costoTotal: number;
+  costoOperacional: number;
 }
 
 export interface SupliesStateI {

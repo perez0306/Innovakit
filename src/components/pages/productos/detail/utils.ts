@@ -14,7 +14,11 @@ export const schema = yup.object().shape({
     .typeError('El campo otros costos debe ser un número'),
   insumos: yup.array().of(
     yup.string().required("El campo insumos es requerido")
-  ).required("El campo insumos es requerido")
+  ).required("El campo insumos es requerido"),
+  vendedor: yup.number().required("El campo vendedor es requerido").min(0, "El campo vendedor debe ser mayor a 0").max(100, "El campo vendedor debe ser menor a 100").transform((value) => (isNaN(value) ? undefined : value))
+    .typeError('El campo vendedor debe ser un número'),
+  financiero: yup.number().required("El campo financiero es requerido").min(0, "El campo financiero debe ser mayor a 0").max(100, "El campo financiero debe ser menor a 100").transform((value) => (isNaN(value) ? undefined : value))
+    .typeError('El campo financiero debe ser un número'),
 });
 
 export const getCostOther = (value: number, setCostoTotalInsumos: (value: number) => void, costoTotal: number) => {
@@ -37,7 +41,7 @@ export const postProduct = async (dataForm: ProductFormI, ventaFormateada: strin
   const { error } = await supabase
     .from('productos')
     .insert([
-      { id: dataForm.id, nombre: dataForm.nombre, linea_negocio: dataForm.lineaNegocio, venta: ventaFormateada, insumo: insumosFormateados, categoria: categorySelected },
+      { id: dataForm.id, nombre: dataForm.nombre, linea_negocio: dataForm.lineaNegocio, venta: ventaFormateada, insumo: insumosFormateados, categoria: categorySelected, financiero: dataForm.financiero, vendedor: dataForm.vendedor },
     ])
   if (error) {
     if (error.message.includes('duplicate key value violates unique')) {
@@ -55,7 +59,7 @@ export const postProduct = async (dataForm: ProductFormI, ventaFormateada: strin
 export const updateProduct = async (dataForm: ProductFormI, ventaFormateada: string, insumosFormateados: string[], router: AppRouterInstance, categorySelected: string) => {
   const { error } = await supabase
     .from('productos')
-    .update({ id: dataForm.id, nombre: dataForm.nombre, linea_negocio: dataForm.lineaNegocio, venta: ventaFormateada, insumo: insumosFormateados, categoria: categorySelected })
+    .update({ id: dataForm.id, nombre: dataForm.nombre, linea_negocio: dataForm.lineaNegocio, venta: ventaFormateada, insumo: insumosFormateados, categoria: categorySelected, financiero: dataForm.financiero, vendedor: dataForm.vendedor })
     .eq('id', dataForm.id)
     .eq('categoria', categorySelected)
     .select()
@@ -78,22 +82,21 @@ export const percentageMargenGross = (precio: number, costo: number) => {
   return { margen, porcentaje };
 }
 
-export const percentageMargenOperating = (precio: number, margenGross: number, costs: CostI[]) => {
+export const percentageMargenOperating = (precio: number, margenGross: number, cost: number) => {
   if (precio === 0 || margenGross === 0) {
     return { margen: 0, porcentaje: 0 };
   }
-  const costoTotal = costs.reduce((acc: number, curr: CostI) => acc + curr.valor * precio, 0);
-  const margen = margenGross - costoTotal;
+  const margen = margenGross - cost;
   const porcentaje = ((margen / precio) * 100).toFixed(2);
   return { margen, porcentaje };
 }
 
-export const percentageMargenNeto = (precio: number, margenOperating: number) => {
+export const percentageMargenNeto = (precio: number, margenOperating: number, renta: number) => {
   if (precio === 0 || margenOperating === 0) {
     return { margen: 0, porcentaje: 0 };
   }
 
-  const rent = margenOperating * 0.35;
+  const rent = margenOperating * renta;
   const margen = margenOperating - rent;
   const porcentaje = ((margen / precio) * 100).toFixed(2);
   return { margen, porcentaje };

@@ -95,8 +95,8 @@
 }
 
 .percentage {
-    color: #dc2626;
-    background: #fee2e2;
+    color: #22c55e;
+    background: #dcfce7;
     padding: 0.25rem 0.75rem;
     border-radius: 9999px;
     font-size: 0.875rem;
@@ -190,4 +190,18 @@
 .productLists li {
     padding: 10px;
     border-bottom: 1px solid #eee;
+}
+
+.filterContainer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.select {
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    width: 200px;
 }

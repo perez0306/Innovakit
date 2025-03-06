@@ -20,6 +20,8 @@ const Productos = () => {
         setProductState({ id, index });
     }
 
+    console.log({product});
+
     const editAction = (id: string) => {
         router.push(`/productos/${id}`);
     }

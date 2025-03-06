@@ -37,7 +37,7 @@ export const formatSelectInsumo = (vendor: TableStateI[]) => {
 
 export const formatSelectInsumoOptions = (vendor: SupliesI[]) => {
   return vendor.map((vendor: SupliesI) => {
-    return { value: vendor?.id + '-' + vendor?.proveedor, label: vendor?.id + ' - ' + vendor?.proveedor };
+    return { value: vendor?.id + '-' + vendor?.proveedor, label: vendor?.id + ' - ' + vendor?.descripcion + ' - ' + vendor?.proveedor };
   });
 };
 

@@ -9,7 +9,7 @@ import { fetchDataCategory, fetchDataCosts, getDataInsumo, getDataVendor } from 
 import { formatCategory, formatSelectInsumoOptions, formatMiles, getCostValue, getCostValueLastYear, getCategoryProduct } from "@/utils/formated";
 import Select from "react-select";
 import { Controller } from "react-hook-form";
-import { SupliesI, VendorI } from "@/typings/store";
+import { CostI, SupliesI, VendorI } from "@/typings/store";
 import supabase from "@/utils/supabase";
 import { useRouter } from "next/navigation";
 import { desformatearValorCosto } from "../../costos/utils";
@@ -20,8 +20,10 @@ const ProductDetail = ({ isCreate, id }: { isCreate?: boolean, id?: string }) =>
     const { setCategory, category, setCosts, categorySelected, costs } = useAppContext();
     const [insumo, setInsumo] = useState<SupliesI[]>([]);
     const [costes, setCostes] = useState<number[]>([]);
+    const [renta, setRenta] = useState<number>(0);
     const [cantidad, setCantidad] = useState<number[]>([]);
     const [costsLastYear, setCostsLastYear] = useState<number[]>([]);
+    const [costoOperacional, setCostoOperacional] = useState(0);
     const [costoTotalInsumos, setCostoTotalInsumos] = useState(0);
     const { register, handleSubmit, formState: { errors }, control, watch, reset, setValue } = useForm<ProductFormI>({
         resolver: yupResolver(schema),
@@ -32,6 +34,8 @@ const ProductDetail = ({ isCreate, id }: { isCreate?: boolean, id?: string }) =>
 
     const valorVenta = watch('valorVenta');
     const otrosCostos = watch('otrosCostos');
+    const vendedor = watch('vendedor');
+    const financiero = watch('financiero');
 
     const refectData = () => {
         fetchDataCategory(setCategory);
@@ -134,13 +138,13 @@ const ProductDetail = ({ isCreate, id }: { isCreate?: boolean, id?: string }) =>
 
     const { margen: margenOperating, porcentaje: porcentajeOperating } = useMemo(() => {
         const valorVentaFormateado = valorVenta?.toString().replace(/,/g, '') || '0';
-        return percentageMargenOperating(Number(valorVentaFormateado), margenGross, costs);
-    }, [valorVenta, margenGross, costes]);
+        return percentageMargenOperating(Number(valorVentaFormateado), margenGross, costoOperacional);
+    }, [valorVenta, margenGross, costoOperacional]);
 
     const { margen: margenNeto, porcentaje: porcentajeNeto } = useMemo(() => {
         const valorVentaFormateado = valorVenta?.toString().replace(/,/g, '') || '0';
-        return percentageMargenNeto(Number(valorVentaFormateado), margenOperating);
-    }, [valorVenta, margenOperating]);
+        return percentageMargenNeto(Number(valorVentaFormateado), margenOperating, renta);
+    }, [valorVenta, margenOperating, renta]);
 
     useEffect(() => {
         refectData();
@@ -187,6 +191,8 @@ const ProductDetail = ({ isCreate, id }: { isCreate?: boolean, id?: string }) =>
                     nombre: data[0]?.nombre,
                     lineaNegocio: data[0]?.linea_negocio,
                     valorVenta: formatMiles(data[0]?.venta),
+                    vendedor: data[0]?.vendedor,
+                    financiero: data[0]?.financiero,
                     insumos: isumosFormated,
                 });
                 data[0]?.insumo.forEach((insumo: string, index: number) => {
@@ -206,6 +212,17 @@ const ProductDetail = ({ isCreate, id }: { isCreate?: boolean, id?: string }) =>
         getCostOther(otrosCostos, setCostoTotalInsumos, costoTotal);
     }, [costoTotal]);
 
+    useEffect(() => {
+        const valorVentaFormateado = valorVenta?.toString().replace(/,/g, '') || '0';
+        const costFilter = costs.filter(cost => cost.nombre !== "renta");
+        const renta = costs.find(cost => cost.nombre === "renta");
+        setRenta(renta?.valor || 0);
+        const costoTotal = costFilter.reduce((acc: number, curr: CostI) => acc + curr.valor * Number(valorVentaFormateado), 0);
+        const costoVendedor = Number(valorVentaFormateado) * (vendedor / 100);
+        const costoFinanciero = Number(valorVentaFormateado) * (financiero / 100);
+        setCostoOperacional(costoTotal + costoVendedor + costoFinanciero);
+    }, [costs, valorVenta, vendedor, financiero]);
+    
     return (
         <div className={styles.container}>
             <ReturnComponent />
@@ -297,10 +314,11 @@ const ProductDetail = ({ isCreate, id }: { isCreate?: boolean, id?: string }) =>
                                             <input
                                                 defaultValue={cantidad[index] || 1}
                                                 type="number"
+                                                step={categorySelected !== "1" ? "0.1" : "1"}
                                                 placeholder="Cantidad"
                                                 className={styles.cantidadInput}
                                                 onChange={(e) => {
-                                                    const cantidad = parseInt(e.target.value);
+                                                    let cantidad = categorySelected === "1" ? parseInt(e.target.value) : parseFloat(e.target.value);
                                                     if (!isNaN(cantidad)) {
                                                         getCost(value[index], index, cantidad);
                                                         setCantidad(prev => {
@@ -310,7 +328,7 @@ const ProductDetail = ({ isCreate, id }: { isCreate?: boolean, id?: string }) =>
                                                         });
                                                     }
                                                 }}
-                                                min="1"
+                                                min={categorySelected !== "1" ? "0.1" : "1"}
                                             />
                                             <p className={styles.cantidadInput}>${formatMiles(costes?.[index] ?? 0)}</p>
                                             <button
@@ -359,6 +377,28 @@ const ProductDetail = ({ isCreate, id }: { isCreate?: boolean, id?: string }) =>
                     />
                     {errors.otrosCostos && <span className={styles.error}>{errors.otrosCostos.message}</span>}
                 </div>
+                <div className={styles.formGroup}>
+                    <label htmlFor="vendedor">Vendedor (%)</label>
+                    <input
+                        {...register("vendedor")}
+                        id="vendedor"
+                        type="text"
+                        placeholder="Ingrese porcentaje (0-100)"
+                        value={vendedor}
+                    />
+                    {errors.vendedor && <span className={styles.error}>{errors.vendedor.message}</span>}
+                </div>
+                <div className={styles.formGroup}>
+                    <label htmlFor="financiero">Financiero (%)</label>
+                    <input
+                        {...register("financiero")}
+                        id="financiero"
+                        type="number"
+                        placeholder="Ingrese porcentaje (0-100)"
+                        value={financiero}
+                    />
+                    {errors.financiero && <span className={styles.error}>{errors.financiero.message}</span>}
+                </div>
                 <div className={styles.resumenFinanciero}>
                     <h2 className={styles.resumenFinancieroTitle}>Resumen Costos</h2>
                     <div className={styles.cardResumen}>
@@ -376,6 +416,13 @@ const ProductDetail = ({ isCreate, id }: { isCreate?: boolean, id?: string }) =>
                             <span className={styles.porcentaje}>
                                 ({percentageCosto(costoTotalLastYear, costoTotal)}%)
                             </span>
+                        </div>
+                    </div>
+                    <div className={styles.cardResumen}>
+                        <h3 className={styles.cardTitle}>Costo Operacional</h3>
+                        <div className={styles.cardValue}>
+                            <span className={styles.moneda}>$</span>
+                            <span className={styles.cantidad}>{formatMiles(costoOperacional)}</span>
                         </div>
                     </div>
                 </div>

@@ -88,7 +88,7 @@ export const fetchDataProduct = async (
   }
 };
 
-const getProduct = async (error: PostgrestError | null, data: ProductI[] | null) => {
+export const getProduct = async (error: PostgrestError | null, data: ProductI[] | null) => {
   if (error || !data) {
     return [];
   }
