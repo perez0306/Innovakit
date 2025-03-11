@@ -175,7 +175,8 @@ const ProductDetail = ({ isCreate, id }: { isCreate?: boolean, id?: string }) =>
                 .select("*");
 
             if (!error && costosData) {
-                const sumaCostos = costosData.reduce((acc, costo) => acc + (costo.valor || 0), 0);
+                const costFilter = costosData.filter(cost => cost.nombre !== "renta");
+                const sumaCostos = costFilter.reduce((acc, costo) => acc + (costo.valor || 0), 0);
                 const sumFormat = desformatearValorCosto(sumaCostos);
                 setValue("otrosCostos", Number(sumFormat));
             }
