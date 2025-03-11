@@ -146,6 +146,11 @@ const ProductDetail = ({ isCreate, id }: { isCreate?: boolean, id?: string }) =>
         return percentageMargenNeto(Number(valorVentaFormateado), margenOperating, renta);
     }, [valorVenta, margenOperating, renta]);
 
+    const tipoOptions = [
+        { value: 'propios', label: 'Propios' },
+        { value: 'distribucion', label: 'Distribución' }
+    ];
+
     useEffect(() => {
         refectData();
         getDataVendor().then((vendor: VendorI[]) => {
@@ -193,6 +198,7 @@ const ProductDetail = ({ isCreate, id }: { isCreate?: boolean, id?: string }) =>
                     valorVenta: formatMiles(data[0]?.venta),
                     vendedor: data[0]?.vendedor,
                     financiero: data[0]?.financiero,
+                    clasificacion: data[0]?.clasificacion,
                     insumos: isumosFormated,
                 });
                 data[0]?.insumo.forEach((insumo: string, index: number) => {
@@ -222,7 +228,7 @@ const ProductDetail = ({ isCreate, id }: { isCreate?: boolean, id?: string }) =>
         const costoFinanciero = Number(valorVentaFormateado) * (financiero / 100);
         setCostoOperacional(costoTotal + costoVendedor + costoFinanciero);
     }, [costs, valorVenta, vendedor, financiero]);
-    
+
     return (
         <div className={styles.container}>
             <ReturnComponent />
@@ -265,6 +271,23 @@ const ProductDetail = ({ isCreate, id }: { isCreate?: boolean, id?: string }) =>
                         )}
                     />
                     {errors.lineaNegocio && <span className={styles.error}>{errors.lineaNegocio.message}</span>}
+                </div>
+                <div className={styles.formGroup}>
+                    <label htmlFor="clasificacion">Clasificación</label>
+                    <Controller
+                        name="clasificacion"
+                        control={control}
+                        render={({ field: { onChange, value, ...field } }) => (
+                            <Select
+                                {...field}
+                                value={tipoOptions.find(t => t.value === value)}
+                                onChange={(option) => onChange(option?.value)}
+                                options={tipoOptions}
+                                placeholder="Seleccione un tipo"
+                            />
+                        )}
+                    />
+                    {errors.clasificacion && <span className={styles.error}>{errors.clasificacion.message}</span>}
                 </div>
                 <div className={styles.formGroup}>
                     <label htmlFor="valorVenta">Valor de Venta</label>

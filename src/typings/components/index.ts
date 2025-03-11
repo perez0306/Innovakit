@@ -27,6 +27,7 @@ export interface ProductFormI {
     id: string;
     nombre: string;
     lineaNegocio: string;
+    clasificacion: string;
     valorVenta: string;
     otrosCostos: number;
     insumos: string[];

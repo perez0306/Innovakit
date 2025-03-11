@@ -7,6 +7,7 @@ export const schema = yup.object().shape({
   id: yup.string().required("El id es requerido"),
   nombre: yup.string().required("El nombre es requerido"),
   lineaNegocio: yup.string().required("La linea de negocio es requerida"),
+  clasificacion: yup.string().required('La clasificación es requerida'),
   valorVenta: yup.string()
     .required("El valor de venta es requerido"),
   otrosCostos: yup.number().required("El campo otros costos es requerido").min(0, "El campo otros costos debe ser mayor a 0").max(100, "El campo otros costos debe ser menor a 100").transform((value) => (isNaN(value) ? undefined : value))
@@ -40,7 +41,7 @@ export const postProduct = async (dataForm: ProductFormI, ventaFormateada: strin
   const { error } = await supabase
     .from('productos')
     .insert([
-      { id: dataForm.id, nombre: dataForm.nombre, linea_negocio: dataForm.lineaNegocio, venta: ventaFormateada, insumo: insumosFormateados, categoria: categorySelected, financiero: dataForm.financiero, vendedor: dataForm.vendedor },
+      { id: dataForm.id, nombre: dataForm.nombre, linea_negocio: dataForm.lineaNegocio, venta: ventaFormateada, insumo: insumosFormateados, categoria: categorySelected, financiero: dataForm.financiero, vendedor: dataForm.vendedor, clasificacion: dataForm.clasificacion },
     ])
   if (error) {
     if (error.message.includes('duplicate key value violates unique')) {
@@ -58,7 +59,7 @@ export const postProduct = async (dataForm: ProductFormI, ventaFormateada: strin
 export const updateProduct = async (dataForm: ProductFormI, ventaFormateada: string, insumosFormateados: string[], router: AppRouterInstance, categorySelected: string) => {
   const { error } = await supabase
     .from('productos')
-    .update({ id: dataForm.id, nombre: dataForm.nombre, linea_negocio: dataForm.lineaNegocio, venta: ventaFormateada, insumo: insumosFormateados, categoria: categorySelected, financiero: dataForm.financiero, vendedor: dataForm.vendedor })
+    .update({ id: dataForm.id, nombre: dataForm.nombre, linea_negocio: dataForm.lineaNegocio, venta: ventaFormateada, insumo: insumosFormateados, categoria: categorySelected, financiero: dataForm.financiero, vendedor: dataForm.vendedor, clasificacion: dataForm.clasificacion })
     .eq('id', dataForm.id)
     .eq('categoria', categorySelected)
     .select()

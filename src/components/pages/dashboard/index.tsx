@@ -14,7 +14,7 @@ export default function Dashboard() {
     const [productos, setProductos] = useState<ProductI[]>([]);
     const [productosData, setProductosData] = useState<ProductDataI[]>([]);
     const [dataInsumo, setDataInsumo] = useState<SupliesI[]>([]);
-
+    const [clasificacionSelected, setClasificacionSelected] = useState<string>("propios");
     const getMargen = (producto: ProductI) => {
         const costoTotal = producto.insumo.reduce((sum, acc) => {
             const [, cantidad] = acc.split('_');
@@ -59,7 +59,8 @@ export default function Dashboard() {
         const { data: reportes, error } = await supabase
             .from('productos')
             .select('*')
-            .eq('categoria', categorySelected);
+            .eq('categoria', categorySelected)
+            .eq('clasificacion', clasificacionSelected);
 
         if (error || !reportes) {
             setProductos([]);
@@ -70,7 +71,7 @@ export default function Dashboard() {
 
     useEffect(() => {
         refectData();
-    }, [categorySelected]);
+    }, [categorySelected, clasificacionSelected]);
 
     useEffect(() => {
         const loadProductos = async () => {
@@ -104,12 +105,22 @@ export default function Dashboard() {
                     name="category"
                     id="category"
                     value={categorySelected}
-                    onChange={(e) => setCategorySelected(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setCategorySelected(e.target.value)}
                     className={styles.select}
                 >
                     <option value="1">General</option>
                     <option value="2">Marquesina Cafe</option>
                     <option value="3">Marquesina Cacao</option>
+                </select>
+                <select
+                    name="clasificacion"
+                    id="clasificacion"
+                    value={clasificacionSelected}
+                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setClasificacionSelected(e.target.value)}
+                    className={styles.select}
+                >
+                    <option value="propios">Propios</option>
+                    <option value="distribucion">Distribución</option>
                 </select>
             </div>
 
