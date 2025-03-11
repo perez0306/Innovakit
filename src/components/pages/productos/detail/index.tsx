@@ -338,7 +338,7 @@ const ProductDetail = ({ isCreate, id }: { isCreate?: boolean, id?: string }) =>
                                             <input
                                                 defaultValue={cantidad[index] || 1}
                                                 type="number"
-                                                step={categorySelected !== "1" ? "0.1" : "1"}
+                                                step={categorySelected !== "1" ? "0.01" : "1"}
                                                 placeholder="Cantidad"
                                                 className={styles.cantidadInput}
                                                 onChange={(e) => {
@@ -352,7 +352,7 @@ const ProductDetail = ({ isCreate, id }: { isCreate?: boolean, id?: string }) =>
                                                         });
                                                     }
                                                 }}
-                                                min={categorySelected !== "1" ? "0.1" : "1"}
+                                                min={categorySelected !== "1" ? "0.01" : "1"}
                                             />
                                             <p className={styles.cantidadInput}>${formatMiles(costes?.[index] ?? 0)}</p>
                                             <button
